@@ -5,13 +5,12 @@ output:
     keep_md: true
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
-```
+
 
 ## Loading and preprocessing the data
 
-```{r load-data}
+
+``` r
 library(ggplot2)
 library(dplyr)
 
@@ -24,7 +23,8 @@ activity$date <- as.Date(activity$date)
 
 ## What is mean total number of steps taken per day?
 
-```{r steps-per-day}
+
+``` r
 steps_day <- activity %>%
   group_by(date) %>%
   summarise(total_steps = sum(steps, na.rm = TRUE))
@@ -33,19 +33,24 @@ ggplot(steps_day, aes(x = total_steps)) +
   geom_histogram(binwidth = 2000, fill = "steelblue", color = "white") +
   labs(title = "Total steps per day",
        x = "Steps", y = "Frequency")
+```
 
+![](PA1_template_files/figure-html/steps-per-day-1.png)<!-- -->
+
+``` r
 mean_steps   <- mean(steps_day$total_steps)
 median_steps <- median(steps_day$total_steps)
 ```
 
-- **Mean:** `r round(mean_steps, 2)` steps  
-- **Median:** `r round(median_steps, 2)` steps
+- **Mean:** 9354.23 steps  
+- **Median:** 1.0395\times 10^{4} steps
 
 ---
 
 ## What is the average daily activity pattern?
 
-```{r daily-pattern}
+
+``` r
 interval_avg <- activity %>%
   group_by(interval) %>%
   summarise(avg_steps = mean(steps, na.rm = TRUE))
@@ -54,25 +59,31 @@ ggplot(interval_avg, aes(x = interval, y = avg_steps)) +
   geom_line(color = "steelblue") +
   labs(title = "Average steps per 5-minute interval",
        x = "Interval", y = "Average steps")
+```
 
+![](PA1_template_files/figure-html/daily-pattern-1.png)<!-- -->
+
+``` r
 max_interval <- interval_avg$interval[which.max(interval_avg$avg_steps)]
 ```
 
-The 5-minute interval with the maximum average steps is: **`r max_interval`**
+The 5-minute interval with the maximum average steps is: **835**
 
 ---
 
 ## Imputing missing values
 
-```{r imputing}
+
+``` r
 total_na <- sum(is.na(activity$steps))
 ```
 
-Total missing values: **`r total_na`**
+Total missing values: **2304**
 
 Strategy: replace each NA with the **mean of its 5-minute interval**.
 
-```{r impute-fill}
+
+``` r
 activity_imputed <- activity %>%
   left_join(interval_avg, by = "interval") %>%
   mutate(steps = ifelse(is.na(steps), avg_steps, steps)) %>%
@@ -86,19 +97,24 @@ ggplot(steps_day2, aes(x = total_steps)) +
   geom_histogram(binwidth = 2000, fill = "coral", color = "white") +
   labs(title = "Total steps per day (imputed)",
        x = "Steps", y = "Frequency")
+```
 
+![](PA1_template_files/figure-html/impute-fill-1.png)<!-- -->
+
+``` r
 mean_steps2   <- mean(steps_day2$total_steps)
 median_steps2 <- median(steps_day2$total_steps)
 ```
 
-- **Mean (imputed):** `r round(mean_steps2, 2)`  
-- **Median (imputed):** `r round(median_steps2, 2)`
+- **Mean (imputed):** 1.076619\times 10^{4}  
+- **Median (imputed):** 1.076619\times 10^{4}
 
 ---
 
 ## Are there differences in activity patterns between weekdays and weekends?
 
-```{r weekday-weekend}
+
+``` r
 activity_imputed <- activity_imputed %>%
   mutate(day_type = ifelse(weekdays(date) %in% c("Saturday", "Sunday"),
                            "weekend", "weekday"),
@@ -114,3 +130,5 @@ ggplot(interval_daytype, aes(x = interval, y = avg_steps)) +
   labs(title = "Average steps by interval: Weekday vs Weekend",
        x = "Interval", y = "Average steps")
 ```
+
+![](PA1_template_files/figure-html/weekday-weekend-1.png)<!-- -->
